@@ -1,0 +1,8 @@
+body { font-family: system-ui, sans-serif; background: #f5f5f5; margin: 0; }
+main { max-width: 600px; margin: 0 auto; padding: 1rem; }
+header { display: flex; justify-content: space-between; align-items: center; }
+form { display: flex; gap: .5rem; margin: 1rem 0; }
+input { flex: 1; padding: .5rem; }
+article { background: #fff; border-radius: 6px; padding: .75rem; margin-bottom: .5rem; }
+.muted { color: #888; font-size: .85em; }
+.error { color: #c00; }

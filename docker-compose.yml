@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-loadlab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-loadlab}
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    cpus: ${DB_CPUS:-1.0}
+    mem_limit: ${DB_MEM:-1g}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loadlab}"]
+      interval: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-loadlab}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-loadlab}
+      TOKEN_SECRET: ${TOKEN_SECRET:-dev-secret}
+      PG_POOL_MAX: ${PG_POOL_MAX:-10}
+      PORT: "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    cpus: ${API_CPUS:-1.0}
+    mem_limit: ${API_MEM:-512m}
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
