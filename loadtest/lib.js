@@ -3,7 +3,11 @@ import { check } from "k6";
 
 export const BASE_URL = __ENV.BASE_URL || "http://localhost";
 const USERS = Number(__ENV.SEEDED_USERS || 10000); // must match seed
+const POSTS = Number(__ENV.SEEDED_POSTS || USERS * 20); // must match seed (users x posts/user)
 const TOKEN_POOL = Number(__ENV.TOKEN_POOL || 200);
+
+// A random friend id can be your own id (400); that is expected, not a failure.
+http.setResponseCallback(http.expectedStatuses({ min: 200, max: 299 }, 400));
 
 export const thresholds = {
   http_req_failed: ["rate<0.01"],
@@ -41,7 +45,7 @@ export function mixed(data) {
     const res = http.get(`${BASE_URL}/api/feed?limit=20`, params);
     check(res, { "feed 200": (x) => x.status === 200 });
   } else if (r < 0.9) {
-    const postId = 1 + Math.floor(Math.random() * 100000);
+    const postId = 1 + Math.floor(Math.random() * POSTS);
     const res = http.post(`${BASE_URL}/api/posts/${postId}/like`, null, {
       ...params,
       tags: { name: "like" },

@@ -11,7 +11,7 @@ k6 run -e BASE_URL=http://<app-private-ip> -e DURATION=1h soak.js
 ```
 
 Seed first (on the app box): `docker compose run --rm api node dist/seed.js 10000 50 20 5`
-Env `SEEDED_USERS` must match the seeded user count.
+Env `SEEDED_USERS` and `SEEDED_POSTS` (users x posts/user) must match the seed, e.g. locally after `seed.js 1000 20 10 3`: `-e SEEDED_USERS=1000 -e SEEDED_POSTS=10000`.
 
 Arrival-rate executors are used on purpose: they keep sending at a fixed rate even when
 the server slows down, so latency growth is visible (no coordinated omission).
